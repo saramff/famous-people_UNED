@@ -12,6 +12,16 @@ En PowerShell, si la ejecución de scripts está deshabilitada, usar `npm.cmd` e
 
 `npm run build` crea la versión publicable en `dist`. `npm run preview` permite revisarla. `npm test` comprueba el diseño y la corrección de respuestas.
 
+## Publicar en Netlify
+
+Importar este repositorio desde GitHub en Netlify y seleccionar la rama `master`. [netlify.toml](netlify.toml) define automáticamente la compilación (`npm test && npm run build`), la carpeta publicada (`dist`), Node.js 22 y la conexión pública al Supabase del experimento. No es necesario subir el `.env` local. Estas opciones siguen la [configuración de Vite en Netlify](https://docs.netlify.com/build/frameworks/framework-setup-guides/vite/) y la [configuración por archivo](https://docs.netlify.com/build/configure-builds/file-based-configuration/).
+
+La URL y la clave `anon` de ese archivo son configuración pública para el navegador; los resultados están protegidos por los permisos y RLS de la tabla. No contiene claves administrativas. Si se cambia de proyecto o se rota la clave, actualizar esos valores y volver a desplegar. Referencia: [claves de Supabase](https://supabase.com/docs/guides/getting-started/api-keys).
+
+La compilación se detiene si faltan la URL o la clave pública, se utiliza una clave administrativa, la clave apunta a otro proyecto o se elige otra tabla. Así se evita publicar una versión sin guardado.
+
+Cuando termine el despliegue, compartir la URL HTTPS que entrega Netlify. Cada participante entra directamente al consentimiento sin iniciar sesión; al terminar se envía su sesión a `public.famous_people_attribute`. Mantener abierta la pestaña hasta que finalice el envío; los reintentos siguen las condiciones descritas en «Datos y guardado».
+
 ## Recorrido
 
 | Paso | Presentación | Avance |
@@ -46,7 +56,13 @@ Si se modifican objetos, comprobar las imágenes y mantener distintos los 96 obj
 
 ## Datos y guardado
 
-Se conserva el destino del experimento base: la columna JSON `data` de la tabla `experimento-personajes-aprend` de Supabase. El archivo `.env` existente configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_API_KEY`. Se puede elegir otra tabla existente con `VITE_SUPABASE_TABLE`. Solo deben usarse claves públicas o `anon` en el navegador. No se necesitan cambios de esquema para una columna `data` JSON/JSONB. No se modifican los permisos de la base de datos.
+El destino es la tabla nueva `public.famous_people_attribute` del mismo proyecto de Supabase que el experimento anterior. Se mantienen la URL y la clave pública de `.env`; `VITE_SUPABASE_TABLE=famous_people_attribute` selecciona la nueva tabla.
+
+1. Abrir el **SQL Editor del proyecto anterior** y ejecutar una vez [supabase/crear_tabla.sql](supabase/crear_tabla.sql). Si ya existe una tabla con ese nombre, el script se cancela sin modificarla.
+2. Comprobar que `.env` contiene la URL y la clave pública o `anon` de ese proyecto, además de la nueva tabla. [.env.example](.env.example) muestra los nombres de las variables; nunca usar una clave `service_role` o secreta en el navegador.
+3. Reiniciar `npm run dev` o volver a ejecutar `npm run build` y publicar el nuevo `dist`. Vite incorpora estas variables al compilar.
+
+El SQL crea una fila por sesión: UUID de sesión y participante, fecha de recepción, versión, edad, sexo y columna `data` JSONB con el registro completo. Los campos de análisis se generan desde `data`, para que no puedan diferir del JSON original. La clave primaria impide duplicar una sesión. RLS y los permisos permiten únicamente insertar la columna `data`: los participantes no pueden consultar, modificar ni borrar resultados. El equipo puede analizarlos desde el SQL Editor o Table Editor con su acceso administrativo. Referencia: [seguridad de la API de Supabase](https://supabase.com/docs/guides/api/securing-your-api).
 
 Solo se solicitan y guardan edad y sexo como datos demográficos. No se piden ni guardan nombre, apellidos, centro asociado ni lengua materna. Se genera automáticamente un `participant_id` aleatorio (UUID) para cada participación, presente en el registro general, en `participant` y en todos los ensayos. Al recargar se genera otro identificador; no se intenta identificar a una persona entre sesiones. `session_id` conserva el mismo valor por compatibilidad con el formato anterior.
 
@@ -80,13 +96,15 @@ Para analizar, filtrar `task = verification` (fase 3) o `task = recognition` (fa
 
 Las respuestas se mantienen únicamente en memoria mientras la página está abierta. No se guardan copias locales ni se ofrecen descargas. Cada recarga comienza directamente desde el consentimiento, con una sesión y un sorteo nuevos, sin pantalla de recuperación ni aviso de confirmación. Al iniciar se elimina cualquier copia local dejada por la versión anterior, sin tocar otros datos del navegador.
 
-Al finalizar se muestra únicamente el agradecimiento, con los logotipos. El envío al servidor se realiza en segundo plano, sin mensajes de éxito, error, espera ni botones de reintento. Al recargar o cerrar se pierde cualquier respuesta que todavía no se haya enviado. Las sesiones ya recibidas por el servidor se conservan allí.
+Al finalizar se muestra únicamente el agradecimiento, con los logotipos. El envío se realiza en segundo plano, sin botones ni mensajes para el participante. Ante fallos temporales de red, tiempo de espera, límite de solicitudes o servidor, se hacen hasta tres intentos con la misma sesión, con pausas de 1 y 3 segundos y un máximo de 15 segundos por petición. Si se perdió la respuesta de un envío ya aceptado, la restricción única permite reconocerlo sin duplicar ni sobrescribir el resultado. Los errores de configuración o permisos no se reintentan. Si se agotan los intentos, se registra únicamente el código de error en la consola, sin incluir respuestas.
+
+La pestaña debe permanecer abierta hasta que termine el envío. Los reintentos no sobreviven al cierre o a la recarga y no se crean copias locales. Las sesiones ya recibidas se conservan en el servidor.
 
 Los cambios de foco/pantalla completa se registran en `interactions`; conviene revisarlos al analizar la calidad de los datos. El límite interno de 7 minutos del Tetris sigue corriendo entre partidas y al cambiar de ventana; el navegador puede retrasar la transición si suspende la pestaña. La duración observada queda registrada. El único marcador visible cuenta las líneas completas de la partida actual y vuelve a cero al pulsar «Volver a jugar». No se calculan puntos ni se muestra tiempo restante.
 
-Antes de recoger participantes, el equipo responsable debe revisar el texto de consentimiento y verificar un envío autorizado en su destino real. Las pruebas automáticas de recorrido deben interceptar el envío para no introducir participantes ficticios en la base de datos.
+Antes de recoger participantes, el equipo responsable debe revisar el texto de consentimiento, ejecutar el SQL y verificar un envío autorizado en su destino real. Las pruebas automáticas interceptan el envío o usan una base local para no introducir participantes ficticios en Supabase.
 
-Verificación del diseño: compilación, 5 pruebas (incluidos 1.000 sorteos) y recorrido completo en Chromium con las 96 imágenes remotas. Se comprobó el bloqueo de los primeros 5 segundos de reexposición, la indicación y el avance con una nueva pulsación de Espacio, las fijaciones de reconocimiento de 2 segundos, y el reinicio del contador de líneas tras completar una línea y volver a jugar. El Tetris duró 420.000 ms con reloj simulado. Un fallo de envío interceptado mantuvo únicamente el agradecimiento en pantalla, sin mensajes ni reintentos. También se comprobó que una recarga vuelve al consentimiento sin confirmación, vacía el formulario, elimina la copia de la versión anterior y no conserva datos de participantes ni ofrece descargas, incluso al terminar o fallar el envío. No se insertaron datos de prueba en el servidor. La conexión de Supabase del `.env` original devolvió `ENOTFOUND` (el dominio no resuelve): es necesario actualizar esa configuración para que funcione el envío centralizado.
+Las pruebas de almacenamiento se ejecutan con `npm test`: comprueban el JSON enviado, los reintentos, la detección de duplicados, los errores de permisos y la cancelación por tiempo de espera. No contactan con la base real.
 
 ## Fuentes de los logotipos
 

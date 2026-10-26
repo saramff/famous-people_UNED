@@ -317,7 +317,10 @@ async function finishExperiment() {
   root.dataset.screen = 'other';
   root.innerHTML = `<section class="info-card">${brand}<h1>Gracias por participar</h1></section>`;
   // El resultado del envío no modifica la pantalla que ve el participante.
-  await saveSession(session);
+  const result = await saveSession(session);
+  if (!result.ok) {
+    console.error('No se han enviado los resultados a Supabase.', { code: result.code });
+  }
 }
 
 // Cada carga inicia una sesión nueva. Las respuestas solo viven en memoria hasta el envío final.
