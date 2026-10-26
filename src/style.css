@@ -1,0 +1,109 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #172d26;
+  background: #f3f5f2;
+  --green: #00533e;
+  --photo-size: min(500px, calc(100vh - 260px), calc(100vw - 48px));
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input, select { font: inherit; }
+button, input[type='submit'] { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #c58b36; outline-offset: 4px; }
+[hidden] { display: none !important; }
+button:disabled { cursor: default; opacity: .6; }
+a { color: var(--green); text-underline-offset: 3px; }
+h1 { font-size: clamp(27px, 3vw, 36px); line-height: 1.18; font-weight: 600; letter-spacing: -.8px; margin: 14px 0 18px; }
+h2 { font-size: 18px; line-height: 1.4; margin: 26px 0 8px; }
+p { line-height: 1.65; }
+.jspsych-display-element { font-family: Arial, Helvetica, sans-serif; color: #172d26; font-size: 17px; }
+#experiment { min-height: 100vh; }
+.jspsych-content { max-width: 100%; }
+.form-screen, .instructions-screen, .finished-screen { background: #f3f5f2; }
+.jspsych-content.form-screen { width: min(900px, calc(100% - 40px)); margin: 40px auto; text-align: left; background: white; padding: 40px 56px; border: 1px solid #dce4dd; border-radius: 14px; box-shadow: 0 12px 50px #1b3b2710; }
+.brand-row { display: flex; align-items: center; justify-content: space-between; gap: 32px; border-bottom: 1px solid #e2e8e2; padding-bottom: 24px; margin-bottom: 30px; }
+.uned-logo { width: 68px; height: 68px; object-fit: contain; }
+.faculty-logo { width: 190px; height: 76px; object-fit: contain; }
+.eyebrow { color: var(--green); font-size: 12px; letter-spacing: 1.7px; font-weight: 700; margin: 0 0 10px; }
+.lead { color: #5b6b63; font-size: 17px; margin: 0 0 24px; }
+.study-facts { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 16px 18px; border-radius: 6px; background: #edf4ef; color: #305b48; font-size: 13px; }
+.consent-copy { font-size: 15px; color: #41524a; }
+.consent-copy p { margin: 0 0 12px; }
+.contacts { font-size: 14px; }
+.consent-check { display: flex; gap: 14px; align-items: flex-start; background: #f2f6f2; border: 1px solid #d9e3db; border-radius: 7px; padding: 18px; margin: 26px 0; font-size: 14px; line-height: 1.55; cursor: pointer; }
+.consent-check input { width: 19px; height: 19px; flex-shrink: 0; margin-top: 2px; accent-color: var(--green); }
+.jspsych-btn, .primary-button { border-radius: 6px; padding: 13px 23px; font-size: 15px; line-height: 1.4; border: 1px solid var(--green); background: var(--green); color: white; transition: background .15s; }
+.jspsych-btn:hover, .primary-button:hover { background: #003c2c; color: white; }
+.form-screen #jspsych-survey-html-form-next { display: block; margin: 24px 0 0 auto; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 24px; margin: 32px 0 22px; }
+.form-grid label { font-size: 14px; font-weight: 600; text-align: left; }
+.form-grid input, .form-grid select { width: 100%; display: block; margin-top: 9px; padding: 13px 12px; border: 1px solid #b7c7bc; border-radius: 5px; background: white; color: #20382a; font-size: 16px; }
+.field-hint, .optional { color: #66756c; font-size: 13px; font-weight: 400; }
+.field-hint { display: block; margin-top: 8px; line-height: 1.6; }
+.info-card { width: min(760px, calc(100vw - 40px)); background: white; padding: 40px 48px; border: 1px solid #dce4dd; border-radius: 12px; text-align: left; margin: 32px auto; }
+.finished-screen .info-card { margin: auto; }
+.jspsych-content.instructions-screen { padding-bottom: 30px; }
+.continue-hint { border-top: 1px solid #e2e8e2; margin: 28px 0 0; padding-top: 24px; color: #41614f; font-size: 15px; }
+kbd { display: inline-block; border: 1px solid #bdc7bf; border-bottom-width: 3px; border-radius: 4px; background: #f5f7f4; padding: 3px 9px; font: inherit; font-size: .85em; color: #344c3d; }
+.key-examples { display: flex; justify-content: space-between; gap: 20px; padding: 20px; background: #f2f6f2; border-radius: 6px; margin: 24px 0; }
+.loading-message { text-align: center; padding: 15vh 24px; }
+
+/* Escala compartida: cinco radios sobre una línea, con números y tres anclajes. */
+.familiarity-scale { width: 420px; max-width: 100%; margin: 28px auto; color: #111; }
+.scale-track { display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
+.scale-track::before { content: ''; position: absolute; top: 9px; left: 10%; right: 10%; height: 2px; background: #111; pointer-events: none; }
+.scale-choice { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; font-size: 18px; line-height: 1.3; }
+.scale-choice input { appearance: none; width: 20px; height: 20px; border: 2px solid #111; border-radius: 50%; background: white; margin: 0; cursor: pointer; }
+.scale-choice input:checked { background: #163b67; border-color: #163b67; box-shadow: inset 0 0 0 4px white; }
+.familiarity-scale.answered .scale-choice, .scale-choice input:disabled { cursor: default; }
+.scale-choice input:disabled { opacity: 1; }
+.scale-captions { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 10px; font-size: 13px; line-height: 1.4; text-align: center; white-space: nowrap; }
+.scale-captions span:nth-child(2) { grid-column: 3; }
+.scale-captions span:nth-child(3) { grid-column: 5; }
+
+/* Pantallas experimentales: fondo blanco, centro idéntico y ningún adorno. */
+.experimental-screen { background: #fff; color: #111; overflow: hidden; }
+#experiment[data-screen='stimulus'] { background: white; }
+.jspsych-content.experimental-screen { margin: 0; padding: 0; }
+.photo-stage, .fixation, .sentence-stimulus { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.photo-stage { width: var(--photo-size); height: var(--photo-size); }
+.celebrity-photo { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; }
+.person-name { position: absolute; bottom: calc(100% + 12px); width: 100%; text-align: center; font-size: clamp(30px, 3vw, 38px); line-height: 1.2; margin: 0; }
+.reexposure-continue { position: fixed; bottom: 52px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); margin: 0; text-align: center; font-size: 20px; color: #163b67; }
+.fixation { font-size: 60px; line-height: 1; }
+.sentence-stimulus { width: min(850px, calc(100vw - 80px)); text-align: center; font-size: 30px; line-height: 1.5; margin: 0; }
+.response-label { position: fixed; bottom: 56px; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 28px; color: #111; }
+.response-label.left { left: 25%; transform: translateX(-50%); }
+.response-label.right { right: 25%; transform: translateX(50%); }
+.response-label kbd { font-size: 14px; background: white; color: #555; border-color: #ccc; }
+.familiarity-question { position: fixed; top: 18px; left: 0; width: 100%; margin: 0; text-align: center; font-size: 21px; }
+.familiarity-screen .familiarity-scale { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); width: min(420px, calc(100vw - 48px)); margin: 0; }
+
+/* El juego tiene sus propios colores; no se aplican a los estímulos. */
+.tetris-screen { background: #f3f5f2; }
+.tetris-layout { display: flex; align-items: center; justify-content: center; gap: 46px; padding: 24px; }
+.tetris-board { position: relative; line-height: 0; }
+#tetris-canvas { display: block; width: auto; height: min(520px, calc(100vh - 60px)); border: 3px solid #29483c; border-radius: 5px; }
+.tetris-panel { width: 235px; text-align: left; }
+.tetris-panel h1 { margin-top: 4px; }
+.score-box { padding: 14px 18px; margin: 12px 0; border: 1px solid #d4e0d6; border-radius: 7px; background: white; }
+.score-box span { display: block; font-size: 13px; color: #53685c; }
+.score-box strong { font-size: 32px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.tetris-controls { font-size: 14px; }
+.tetris-controls p { margin: 7px 0; }
+.tetris-overlay { position: absolute; inset: 0; background: #142a26e8; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; gap: 20px; line-height: 1.5; }
+.tetris-overlay p { font-size: 24px; margin: 0; }
+.tetris-overlay button { background: #e7bd6c; color: #142a26; border-color: #e7bd6c; font-weight: 700; width: 100%; }
+.tetris-overlay button span { display: block; font-size: 12px; font-weight: 400; margin-top: 4px; }
+.tetris-overlay small { font-size: 13px; line-height: 1.5; }
+@media (max-width: 640px) {
+  .jspsych-content.form-screen, .info-card { padding: 26px 22px; margin: 16px auto; }
+  .form-grid { grid-template-columns: 1fr; gap: 20px; }
+  .brand-row { gap: 16px; }
+  .faculty-logo { width: 160px; }
+  .uned-logo { width: 54px; height: 54px; }
+  .key-examples { flex-direction: column; }
+  .tetris-layout { gap: 16px; padding: 12px; }
+  .tetris-panel { width: 160px; }
+  #tetris-canvas { max-width: 48vw; height: auto; }
+}

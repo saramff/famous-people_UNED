@@ -1,0 +1,23 @@
+{
+  "name": "experiment-sara",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "@jspsych/plugin-fullscreen": "2.0.0",
+    "@jspsych/plugin-html-keyboard-response": "2.0.0",
+    "@jspsych/plugin-preload": "2.0.0",
+    "@jspsych/plugin-survey-html-form": "2.0.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "jspsych": "8.0.0"
+  }
+}
