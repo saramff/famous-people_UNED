@@ -4,6 +4,8 @@
   publish = "dist"
 
 [build.environment]
+  # La clave publica del navegador no debe bloquear el despliegue.
+  SECRETS_SCAN_ENABLED = "false"
   NODE_VERSION = "22"
   VITE_SUPABASE_URL = "https://ljmqhnaqcaqrqsvfapza.supabase.co"
   VITE_SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqbXFobmFxY2FxcnFzdmZhcHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3MzY0OTgsImV4cCI6MjA1ODMxMjQ5OH0.LpKfTNEdxVTVZzHe6vIYPlOOugz92imcEwC5K-NTmUE"

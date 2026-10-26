@@ -18,6 +18,8 @@ Importar este repositorio desde GitHub en Netlify y seleccionar la rama `master`
 
 La URL y la clave `anon` de ese archivo son configuración pública para el navegador; los resultados están protegidos por los permisos y RLS de la tabla. No contiene claves administrativas. Si se cambia de proyecto o se rota la clave, actualizar esos valores y volver a desplegar. Referencia: [claves de Supabase](https://supabase.com/docs/guides/getting-started/api-keys).
 
+El escaneo de secretos de Netlify está desactivado en este proyecto mediante `SECRETS_SCAN_ENABLED=false`, para que la clave pública del navegador no bloquee el despliegue. Referencia: [configuración del escaneo de Netlify](https://docs.netlify.com/manage/security/secret-scanning/).
+
 La compilación se detiene si faltan la URL o la clave pública, se utiliza una clave administrativa, la clave apunta a otro proyecto o se elige otra tabla. Así se evita publicar una versión sin guardado.
 
 Cuando termine el despliegue, compartir la URL HTTPS que entrega Netlify. Cada participante entra directamente al consentimiento sin iniciar sesión; al terminar se envía su sesión a `public.famous_people_attribute`. Mantener abierta la pestaña hasta que finalice el envío; los reintentos siguen las condiciones descritas en «Datos y guardado».
