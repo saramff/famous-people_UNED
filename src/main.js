@@ -285,7 +285,7 @@ plan.verification.forEach((person, index) => {
 
 // 5. Tarea distractora. El reloj nunca se reinicia al empezar otra partida.
 timeline.push(instructions('distractor', 'Juega al Tetris', `
-  <p>Encaja las piezas para completar líneas horizontales. El juego comenzará automáticamente y durará <strong>7 minutos</strong>.</p>
+  <p>Encaja las piezas para completar líneas horizontales. El juego comenzará automáticamente y durará <strong>${TIMING.tetris / 60000} minutos</strong>.</p>
   <p><kbd>←</kbd> <kbd>→</kbd> Mover · <kbd>↑</kbd> Girar · <kbd>↓</kbd> Bajar<br><kbd>Espacio</kbd> Caída rápida</p>
   <p>Si las piezas llegan arriba, pulsa <strong>Volver a jugar (Play Again)</strong>. El contador de líneas volverá a cero al comenzar cada partida.</p>`));
 timeline.push({

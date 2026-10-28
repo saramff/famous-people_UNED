@@ -32,7 +32,7 @@ Cuando termine el despliegue, compartir la URL HTTPS que entrega Netlify. Cada p
 | Fase 1 | 48 famosos con nombre y objeto; escala de familiaridad 1–5 | Clic en la escala, sin límite de tiempo |
 | Fase 2 | Las mismas 48 imágenes y nombres, en otro orden | Espacio, habilitado después de 5 segundos de observación |
 | Fase 3 | Solo 48 frases: 24 verdaderas y 24 falsas | A = NO, L = SÍ |
-| Intermedio | Tetris con líneas completas de la partida actual, sin reloj visible | Termina automáticamente a los 7 minutos |
+| Intermedio | Tetris con líneas completas de la partida actual, sin reloj visible | Termina automáticamente a los 15 minutos |
 | Fase 4 | Solo nombres: 48 personas vistas y 48 nuevas, mezcladas | Clic en una escala de seguridad 1–6, desde seguro de haberlo visto hasta seguro de que es nuevo |
 
 Hay instrucciones antes de cada fase, una cruz central de 500 ms antes de los estímulos de las fases 1–3 y de 2 segundos antes de cada nombre de reconocimiento. Se mantiene una pausa blanca de 1 segundo después de las imágenes de las fases 1 y 2. En la fase 1 se espera la respuesta de familiaridad: 1 = «Para nada», 3 = «Me suena», 5 = «Claro que sí», sin tiempo mínimo ni máximo. No se muestra feedback de acierto o error.
@@ -115,7 +115,7 @@ Al finalizar se muestra únicamente el agradecimiento, con los logotipos. El env
 
 La pestaña debe permanecer abierta hasta que termine el envío. Los reintentos no sobreviven al cierre o a la recarga y no se crean copias locales. Las sesiones ya recibidas se conservan en el servidor.
 
-Los cambios de foco/pantalla completa se registran en `interactions`; conviene revisarlos al analizar la calidad de los datos. El límite interno de 7 minutos del Tetris sigue corriendo entre partidas y al cambiar de ventana; el navegador puede retrasar la transición si suspende la pestaña. La duración observada queda registrada. El único marcador visible cuenta las líneas completas de la partida actual y vuelve a cero al pulsar «Volver a jugar». No se calculan puntos ni se muestra tiempo restante.
+Los cambios de foco/pantalla completa se registran en `interactions`; conviene revisarlos al analizar la calidad de los datos. Desde `experiment_version = famosos-6-v5`, el límite interno del Tetris es de 15 minutos (900 000 ms). Sigue corriendo entre partidas y al cambiar de ventana; el navegador puede retrasar la transición si suspende la pestaña. La duración observada queda registrada. El único marcador visible cuenta las líneas completas de la partida actual y vuelve a cero al pulsar «Volver a jugar». No se calculan puntos ni se muestra tiempo restante.
 
 Antes de recoger participantes, el equipo responsable debe revisar el texto de consentimiento, ejecutar el SQL y verificar un envío autorizado en su destino real. Las pruebas automáticas interceptan el envío o usan una base local para no introducir participantes ficticios en Supabase.
 

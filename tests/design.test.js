@@ -105,5 +105,5 @@ test('tiempos del protocolo', () => {
   assert.equal(TIMING.recognitionFixation, 2000);
   assert.equal(TIMING.exposure, 5000);
   assert.equal(TIMING.exposureGap, 1000);
-  assert.equal(TIMING.tetris, 420000);
+  assert.equal(TIMING.tetris, 900000);
 });
