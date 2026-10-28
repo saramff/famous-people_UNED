@@ -9,5 +9,5 @@ export const TIMING = {
   tetris: 7 * 60 * 1000,
 };
 
-export const EXPERIMENT_VERSION = 'famosos-6-v3';
+export const EXPERIMENT_VERSION = 'famosos-6-v4';
 export const CONSENT_VERSION = '2026-10-25-texto-original';

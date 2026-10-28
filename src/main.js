@@ -7,8 +7,8 @@ import 'jspsych/css/jspsych.css';
 import './style.css';
 import consentHtml from '../consentA2.html?raw';
 import demographicsHtml from './datos.html?raw';
-import { celebrities, newCelebrities, IMAGE_REVISION } from './objects.js';
-import { createPlan, scoreResponse } from './design.js';
+import { celebrities, IMAGE_REVISION } from './objects.js';
+import { createPlan, scoreVerificationResponse, scoreRecognitionResponse } from './design.js';
 import { TIMING, EXPERIMENT_VERSION, CONSENT_VERSION } from './config.js';
 import { startTetris, tetrisHtml } from './tetris.js';
 import { saveSession } from './storage.js';
@@ -114,14 +114,42 @@ function responseLabels(left, right) {
   return `<div class="response-label left"><span>${left}</span><kbd>A</kbd></div><div class="response-label right"><span>${right}</span><kbd>L</kbd></div>`;
 }
 
-// La misma escala se utiliza en el ejemplo y en cada ensayo, sin selección inicial.
-function familiarityScale(name) {
-  return `<div class="familiarity-scale" role="radiogroup" aria-label="Familiaridad">
-    <div class="scale-track">${[1, 2, 3, 4, 5].map(value => `
-      <label class="scale-choice"><input type="radio" name="${name}" value="${value}" aria-label="Familiaridad ${value}"><span>${value}</span></label>
+// Ambas tareas comparten el aspecto de la escala, sin selección inicial.
+function ratingScale(name, label, count, captions, className) {
+  return `<div class="rating-scale ${className}" style="--scale-count: ${count}" role="radiogroup" aria-label="${label}">
+    <div class="scale-track">${Array.from({ length: count }, (_, i) => i + 1).map(value => `
+      <label class="scale-choice"><input type="radio" name="${name}" value="${value}" aria-label="${label} ${value}"><span>${value}</span></label>
     `).join('')}</div>
-    <div class="scale-captions"><span>Para nada</span><span>Me suena</span><span>Claro que sí</span></div>
+    <div class="scale-captions">${captions.map(([text, column]) => `<span style="grid-column: ${column}">${text}</span>`).join('')}</div>
   </div>`;
+}
+
+function familiarityScale(name) {
+  return ratingScale(name, 'Familiaridad', 5, [
+    ['Para nada', '1'], ['Me suena', '3'], ['Claro que sí', '5'],
+  ], 'familiarity-scale');
+}
+
+function recognitionScale(name) {
+  return ratingScale(name, 'Reconocimiento', 6, [
+    ['Seguro de haberlo visto', '1 / span 3'], ['Seguro de que es nuevo', '4 / span 3'],
+  ], 'recognition-scale');
+}
+
+function enableScaleResponse(responseData) {
+  const responseStartedAt = performance.now();
+  const scale = root.querySelector('.rating-scale');
+  scale.addEventListener('change', event => {
+    const response = {
+      ...responseData(Number(event.target.value)),
+      rt: Math.round(performance.now() - responseStartedAt),
+      feedback_duration_ms: TIMING.familiarityFeedback,
+    };
+    // Mostrar la elección antes de avanzar, sin añadir la espera al tiempo de respuesta.
+    scale.classList.add('answered');
+    scale.querySelectorAll('input').forEach(input => { input.disabled = true; });
+    jsPsych.pluginAPI.setTimeout(() => jsPsych.finishTrial(response), TIMING.familiarityFeedback);
+  }, { once: true });
 }
 
 const timeline = [];
@@ -161,10 +189,10 @@ timeline.push({
   on_finish: data => jsPsych.data.addProperties({ fullscreen_entered: data.success }),
 });
 
-// Precargamos las 96 imágenes antes de medir respuestas. No avanzamos si falla alguna.
+// Precargamos las 48 imágenes de aprendizaje. El reconocimiento solo presenta nombres.
 timeline.push({
   type: preload,
-  images: [...celebrities, ...newCelebrities].map(person => person.image),
+  images: celebrities.map(person => person.image),
   css_classes: ['instructions-screen'],
   message: '<h1>Preparando las imágenes</h1><p>Espera un momento. La tarea comenzará cuando estén todas listas.</p>',
   show_progress_bar: true,
@@ -189,23 +217,10 @@ plan.exposure.forEach((person, index) => {
     choices: 'NO_KEYS',
     post_trial_gap: TIMING.exposureGap,
     data: itemData(person, 1, index, 'familiarity'),
-    on_load: () => {
-      const responseStartedAt = performance.now();
-      const scale = root.querySelector('.familiarity-scale');
-      scale.addEventListener('change', event => {
-        const value = Number(event.target.value);
-        const response = {
-          response: value - 1, // Mantener el índice 0–4 de los datos anteriores.
-          familiarity: value,
-          rt: Math.round(performance.now() - responseStartedAt),
-          feedback_duration_ms: TIMING.familiarityFeedback,
-        };
-        // Mostrar la elección antes de avanzar, sin añadir la espera al tiempo de respuesta.
-        scale.classList.add('answered');
-        scale.querySelectorAll('input').forEach(input => { input.disabled = true; });
-        jsPsych.pluginAPI.setTimeout(() => jsPsych.finishTrial(response), TIMING.familiarityFeedback);
-      }, { once: true });
-    },
+    on_load: () => enableScaleResponse(value => ({
+      response: value - 1, // Mantener el índice 0–4 de los datos anteriores.
+      familiarity: value,
+    })),
   });
 });
 
@@ -247,7 +262,7 @@ plan.reexposure.forEach((person, index) => {
 timeline.push(instructions(3, 'Recuerda los objetos', `
   <p>Leerás frases sobre los objetos que tenían las personas en las imágenes.</p>
   <p>Indica si cada frase coincide con lo que has visto. Responde con el teclado:</p>
-  <div class="key-examples"><span><kbd>A</kbd> NO · izquierda</span><span><kbd>L</kbd> SÍ · derecha</span></div>
+  <div class="key-examples"><span><kbd>A</kbd> NO</span><span><kbd>L</kbd> SÍ</span></div>
   <p>La frase permanecerá hasta que respondas. Intenta responder con precisión y sin demorarte innecesariamente.</p>`));
 plan.verification.forEach((person, index) => {
   timeline.push(fixation(3), {
@@ -264,7 +279,7 @@ plan.verification.forEach((person, index) => {
       stated_object: person.statedObject,
       correct_response_meaning: person.isTrue ? 'SÍ' : 'NO',
     },
-    on_finish: data => Object.assign(data, scoreResponse(3, person, data.response)),
+    on_finish: data => Object.assign(data, scoreVerificationResponse(person, data.response)),
   });
 });
 
@@ -285,29 +300,41 @@ timeline.push({
   on_finish: data => Object.assign(data, game.stop()),
 });
 
-// 6. Cuarta fase: 48 imágenes antiguas y 48 nuevas, mezcladas.
+// 6. Cuarta fase: nombres de 48 personas vistas y 48 nuevas, mezclados.
 timeline.push(instructions(4, '¿Lo has visto en este estudio?', `
-  <p>Ahora verás una serie de personas famosas. Algunas ya han aparecido en este estudio y otras son nuevas.</p>
-  <div class="key-examples"><span><kbd>A</kbd> Antiguo · izquierda</span><span><kbd>L</kbd> Nuevo · derecha</span></div>
-  <p>Responde <strong>Antiguo</strong> si ya viste la imagen en este estudio y <strong>Nuevo</strong> si no apareció. Que conozcas al famoso de antes no significa que sea antiguo.</p>
-  <p>Cada imagen permanecerá hasta que respondas.</p>`));
+  <p>Ahora verás los nombres de una serie de personas famosas. Algunas ya han aparecido en este estudio y otras son nuevas.</p>
+  <p>Indica tu grado de seguridad sobre si cada persona apareció en las imágenes de este estudio. Selecciona una opción del 1 al 6 según estos significados:</p>
+  ${recognitionScale('recognition-example')}
+  <ol class="recognition-scale-guide">
+    <li>Estoy totalmente seguro/a de haberlo visto.</li>
+    <li>Estoy bastante seguro/a de haberlo visto.</li>
+    <li>Creo que lo he visto, pero tengo poca seguridad.</li>
+    <li>Creo que es nuevo, pero tengo poca seguridad.</li>
+    <li>Estoy bastante seguro/a de que es nuevo.</li>
+    <li>Estoy totalmente seguro/a de que es nuevo.</li>
+  </ol>
+  <p>Que conozcas al famoso de antes no significa que lo hayas visto en este estudio.</p>
+  <p>Cada nombre permanecerá hasta que selecciones tu respuesta.</p>`));
 plan.recognition.forEach((person, index) => {
   const verification = verificationById.get(person.id);
   timeline.push(fixation(4), {
     type: htmlKeyboard,
-    css_classes: ['experimental-screen'],
-    stimulus: photo(person) + responseLabels('Antiguo', 'Nuevo'),
-    choices: ['a', 'l'],
+    css_classes: ['experimental-screen', 'recognition-screen'],
+    stimulus: `<p class="recognition-question">¿Lo has visto en este estudio?</p><p class="recognition-name">${person.name}</p>${recognitionScale('recognition-response')}`,
+    choices: 'NO_KEYS',
     data: {
       ...itemData(person, 4, index, 'recognition'),
+      stimulus_type: 'name',
+      stimulus_text: person.name,
       image_is_old: person.isOld,
-      image_type: person.isOld ? 'Antiguo' : 'Nuevo',
-      correct_response_meaning: person.isOld ? 'Antiguo' : 'Nuevo',
+      image_type: person.isOld ? 'Visto' : 'Nuevo',
+      correct_response_meaning: person.isOld ? 'Visto' : 'Nuevo',
       // Enlace con la condición previa; la respuesta de fase 3 está en su propia fila.
       phase3_sentence_is_true: verification?.isTrue ?? null,
       phase3_sentence: verification?.sentence ?? null,
     },
-    on_finish: data => Object.assign(data, scoreResponse(4, person, data.response)),
+    on_load: () => enableScaleResponse(value => ({ response: value, recognition_rating: value })),
+    on_finish: data => Object.assign(data, scoreRecognitionResponse(person, data.recognition_rating)),
   });
 });
 

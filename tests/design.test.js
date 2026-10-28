@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { celebrities, newCelebrities, trueSentences, falseSentences } from '../src/objects.js';
-import { createPlan, scoreResponse } from '../src/design.js';
+import { createPlan, scoreVerificationResponse, scoreRecognitionResponse } from '../src/design.js';
 import { TIMING } from '../src/config.js';
 
 // Generador reproducible solo para pruebas. El experimento usa el de jsPsych.
@@ -32,7 +32,7 @@ test('96 imágenes distintas y 48 pares de frases sin repetir objetos', () => {
   });
 });
 
-test('1000 participantes: 24 V + 24 F excluyentes y 48 antiguos + 48 nuevos', () => {
+test('1000 participantes: 24 V + 24 F excluyentes y 48 vistos + 48 nuevos', () => {
   const originalOrder = celebrities.map(person => person.id);
   const idsEverTrue = new Set();
   const idsEverFalse = new Set();
@@ -52,7 +52,8 @@ test('1000 participantes: 24 V + 24 F excluyentes y 48 antiguos + 48 nuevos', ()
     assert.equal(plan.recognition.filter(p => p.isOld).length, 48);
     assert.equal(plan.recognition.filter(p => !p.isOld).length, 48);
     assert.equal(new Set(plan.recognition.map(p => p.id)).size, 96);
-    assert.deepEqual(new Set(plan.recognition.filter(p => p.isOld).map(p => p.image)), new Set(plan.exposure.map(p => p.image)));
+    assert.deepEqual(new Set(plan.recognition.filter(p => p.isOld).map(p => p.name)), new Set(plan.exposure.map(p => p.name)));
+    assert.deepEqual(new Set(plan.recognition.filter(p => !p.isOld).map(p => p.name)), new Set(newCelebrities.map(p => p.name)));
   }
   assert.equal(idsEverTrue.size, 48);
   assert.equal(idsEverFalse.size, 48);
@@ -64,24 +65,39 @@ test('si el sorteo repite el orden completo, la segunda fase tiene otro orden', 
   assert.notDeepEqual(plan.exposure.map(p => p.id), plan.reexposure.map(p => p.id));
 });
 
-test('las ocho combinaciones de corrección respetan A/L y cada fase es independiente', () => {
-  for (const phase of [3, 4]) {
-    for (const condition of [true, false]) {
-      for (const key of ['a', 'l']) {
-        const item = { isTrue: condition, isOld: condition };
-        const result = scoreResponse(phase, item, key);
-        const expectedKey = phase === 3 ? (condition ? 'l' : 'a') : (condition ? 'a' : 'l');
-        assert.equal(result.correct, key === expectedKey);
-        assert.equal(result.accuracy, key === expectedKey ? 'Correcta' : 'Incorrecta');
+test('la verificación respeta A = NO y L = SÍ', () => {
+  for (const condition of [true, false]) {
+    for (const key of ['a', 'l']) {
+      const result = scoreVerificationResponse({ isTrue: condition }, key);
+      const expectedKey = condition ? 'l' : 'a';
+      assert.equal(result.correct_response, expectedKey);
+      assert.equal(result.correct, key === expectedKey);
+      assert.equal(result.accuracy, key === expectedKey ? 'Correcta' : 'Incorrecta');
+      assert.equal(result.response_meaning, key === 'l' ? 'SÍ' : 'NO');
+    }
+  }
+});
+
+test('reconocimiento: los seis valores puntúan Visto/Nuevo con independencia de la frase anterior', () => {
+  for (const isOld of [true, false]) {
+    for (const isTrue of [true, false]) {
+      for (const rating of [1, 2, 3, 4, 5, 6]) {
+        const result = scoreRecognitionResponse({ isOld, isTrue }, rating);
+        const isSeen = rating <= 3;
+        assert.equal(result.response_meaning, isSeen ? 'Visto' : 'Nuevo');
+        assert.equal(result.response_is_seen, isSeen);
+        assert.deepEqual(result.correct_response, isOld ? [1, 2, 3] : [4, 5, 6]);
+        assert.equal(result.correct, isSeen === isOld);
+        assert.equal(result.accuracy, isSeen === isOld ? 'Correcta' : 'Incorrecta');
       }
     }
   }
-  assert.equal(scoreResponse(3, { isTrue: false }, 'l').correct, false);
-  assert.equal(scoreResponse(4, { isTrue: false, isOld: true }, 'a').correct, true);
-  assert.equal(scoreResponse(3, { isTrue: true }, 'l').response_meaning, 'SÍ');
-  assert.equal(scoreResponse(3, { isTrue: false }, 'a').response_meaning, 'NO');
-  assert.equal(scoreResponse(4, { isOld: true }, 'a').response_meaning, 'Antiguo');
-  assert.equal(scoreResponse(4, { isOld: false }, 'l').response_meaning, 'Nuevo');
+});
+
+test('reconocimiento rechaza respuestas vacías, teclas y valores fuera de la escala', () => {
+  for (const rating of [undefined, null, 'a', 'l', '1', 0, 7, 3.5, NaN]) {
+    assert.throws(() => scoreRecognitionResponse({ isOld: true }, rating), RangeError);
+  }
 });
 
 test('tiempos del protocolo', () => {
