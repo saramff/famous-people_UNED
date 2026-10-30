@@ -320,7 +320,7 @@ plan.recognition.forEach((person, index) => {
   timeline.push(fixation(4), {
     type: htmlKeyboard,
     css_classes: ['experimental-screen', 'recognition-screen'],
-    stimulus: `<p class="recognition-question">¿Lo has visto en este estudio?</p><div class="recognition-stimulus"><p class="recognition-name">${person.name}</p>${recognitionScale('recognition-response')}</div>`,
+    stimulus: `<p class="recognition-question">¿Lo has visto en este estudio?</p><div class="recognition-stimulus"><p class="recognition-name">${person.name}</p></div>${recognitionScale('recognition-response')}`,
     choices: 'NO_KEYS',
     data: {
       ...itemData(person, 4, index, 'recognition'),
