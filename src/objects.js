@@ -82,13 +82,17 @@ const newNames = [
   'Jorge Javier Vázquez', 'Marilyn Monroe', 'Mario Casas', 'Mbappé',
   'Michael Jackson', 'Morgan Freeman', 'Pablo Motos', 'Paco León',
   'Papa Francisco', 'Pau Gasol', 'Picasso', 'Pilar Rubio',
-  'Princesa Letizia', 'Rafa Nadal', 'Ramón García', 'Scarlett Johansson',
+  'Reina Letizia', 'Rafa Nadal', 'Ramón García', 'Scarlett Johansson',
   'Sergio Ramos', 'Taylor Swift', 'Terelu Campos', 'Will Smith',
 ];
 
-export const newCelebrities = newNames.map((name, index) => ({
-  id: `N${String(index + 1).padStart(2, '0')}`,
-  name,
-  file: `${name}.png`,
-  image: imageUrl('Reconocimiento', name),
-}));
+export const newCelebrities = newNames.map((name, index) => {
+  // La imagen de Letizia conserva el nombre original del repositorio.
+  const imageName = name === 'Reina Letizia' ? 'Princesa Letizia' : name;
+  return {
+    id: `N${String(index + 1).padStart(2, '0')}`,
+    name,
+    file: `${imageName}.png`,
+    image: imageUrl('Reconocimiento', imageName),
+  };
+});
