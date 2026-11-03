@@ -227,7 +227,7 @@ plan.exposure.forEach((person, index) => {
 // 3. Segunda fase: observar durante al menos 5 segundos y después avanzar con Espacio.
 timeline.push(instructions(2, 'Observa de nuevo', `
   <p>Volverás a ver las mismas personas.</p>
-  <p>Observa con atención a cada persona famosa y, <strong>sobre todo, el objeto que lleva</strong>. Intenta recordar qué objeto acompaña a cada persona.</p>
+  <p>Observa con atención a cada persona famosa.</p>
   <p>Durante los primeros <strong>5 segundos</strong> solo podrás observar la imagen. Después aparecerá una indicación en azul marino para que pulses la barra espaciadora y continúes.</p>`));
 plan.reexposure.forEach((person, index) => {
   timeline.push(fixation(2), {
