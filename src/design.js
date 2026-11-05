@@ -1,13 +1,8 @@
-import { celebrities, newCelebrities, trueSentences, falseSentences } from './objects.js';
+import { celebrities, studyCelebrities, newCelebrities, trueSentences, falseSentences } from './objects.js';
 
 // Recibe la función shuffle de jsPsych. No modifica nunca el catálogo original.
 export function createPlan(shuffle) {
-  const exposure = shuffle(celebrities);
-  let reexposure = shuffle(celebrities);
-  // Evita incluso el caso muy improbable de obtener el mismo orden completo.
-  if (exposure.every((person, i) => person.id === reexposure[i].id)) {
-    reexposure = [...reexposure.slice(1), reexposure[0]];
-  }
+  const exposure = shuffle(studyCelebrities);
 
   const trueIds = new Set(shuffle(celebrities).slice(0, 24).map(person => person.id));
   const verification = shuffle(celebrities.map(person => {
@@ -24,7 +19,7 @@ export function createPlan(shuffle) {
     ...celebrities.map(person => ({ ...person, isOld: true })),
     ...newCelebrities.map(person => ({ ...person, isOld: false })),
   ]);
-  return { exposure, reexposure, verification, recognition };
+  return { exposure, verification, recognition };
 }
 
 // Las teclas de verificación siguen la posición de las etiquetas en la pantalla.

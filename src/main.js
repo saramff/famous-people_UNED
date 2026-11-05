@@ -7,7 +7,7 @@ import 'jspsych/css/jspsych.css';
 import './style.css';
 import consentHtml from '../consentA2.html?raw';
 import demographicsHtml from './datos.html?raw';
-import { celebrities, IMAGE_REVISION } from './objects.js';
+import { IMAGE_REVISION, STUDY_IMAGE_REVISION } from './objects.js';
 import { createPlan, scoreVerificationResponse, scoreRecognitionResponse } from './design.js';
 import { TIMING, EXPERIMENT_VERSION, CONSENT_VERSION } from './config.js';
 import { startTetris, tetrisHtml } from './tetris.js';
@@ -46,7 +46,7 @@ jsPsych.data.addProperties({
   participant_id: participantId,
   session_id: participantId, // Alias para mantener la compatibilidad con los datos anteriores.
   experiment_version: EXPERIMENT_VERSION,
-  image_revision: IMAGE_REVISION,
+  study_image_revision: STUDY_IMAGE_REVISION,
   started_at: startedAt,
 });
 
@@ -56,6 +56,7 @@ function sessionData() {
     session_id: participantId,
     experiment_version: EXPERIMENT_VERSION,
     image_revision: IMAGE_REVISION,
+    study_image_revision: STUDY_IMAGE_REVISION,
     consent_version: CONSENT_VERSION,
     started_at: startedAt,
     participant: { ...participant },
@@ -63,9 +64,8 @@ function sessionData() {
     // El plan permite reconstruir el orden de presentación para el análisis.
     orders: {
       phase1: plan.exposure.map(person => person.id),
-      phase2: plan.reexposure.map(person => person.id),
-      phase3: plan.verification.map(person => ({ id: person.id, is_true: person.isTrue })),
-      phase4: plan.recognition.map(person => person.id),
+      phase2: plan.verification.map(person => ({ id: person.id, is_true: person.isTrue })),
+      phase3: plan.recognition.map(person => person.id),
     },
     trials: jsPsych.data.get().values(),
     interactions: jsPsych.data.getInteractionData().values(),
@@ -84,7 +84,7 @@ function instructions(phase, title, text) {
 }
 
 function fixation(phase) {
-  const duration = phase === 4 ? TIMING.recognitionFixation : TIMING.fixation;
+  const duration = phase === 3 ? TIMING.recognitionFixation : TIMING.fixation;
   return {
     type: htmlKeyboard,
     css_classes: ['experimental-screen'],
@@ -106,6 +106,8 @@ function itemData(person, phase, order, task) {
     person_name: person.name,
     image_file: person.file,
     image_url: person.image,
+    image_revision: person.imageRevision ?? IMAGE_REVISION,
+    study_only: person.studyOnly ?? false,
     actual_object: person.object ?? null,
   };
 }
@@ -114,7 +116,7 @@ function responseLabels(left, right) {
   return `<div class="response-label left"><span>${left}</span><kbd>A</kbd></div><div class="response-label right"><span>${right}</span><kbd>L</kbd></div>`;
 }
 
-// Ambas tareas comparten el aspecto de la escala, sin selección inicial.
+// Escala de reconocimiento, sin selección inicial.
 function ratingScale(name, label, count, captions, className) {
   return `<div class="rating-scale ${className}" style="--scale-count: ${count}" role="radiogroup" aria-label="${label}">
     <div class="scale-track">${Array.from({ length: count }, (_, i) => i + 1).map(value => `
@@ -122,12 +124,6 @@ function ratingScale(name, label, count, captions, className) {
     `).join('')}</div>
     <div class="scale-captions">${captions.map(([text, column]) => `<span style="grid-column: ${column}">${text}</span>`).join('')}</div>
   </div>`;
-}
-
-function familiarityScale(name) {
-  return ratingScale(name, 'Familiaridad', 5, [
-    ['Para nada', '1'], ['Me suena', '3'], ['Claro que sí', '5'],
-  ], 'familiarity-scale');
 }
 
 function recognitionScale(name) {
@@ -143,12 +139,12 @@ function enableScaleResponse(responseData) {
     const response = {
       ...responseData(Number(event.target.value)),
       rt: Math.round(performance.now() - responseStartedAt),
-      feedback_duration_ms: TIMING.familiarityFeedback,
+      feedback_duration_ms: TIMING.recognitionFeedback,
     };
     // Mostrar la elección antes de avanzar, sin añadir la espera al tiempo de respuesta.
     scale.classList.add('answered');
     scale.querySelectorAll('input').forEach(input => { input.disabled = true; });
-    jsPsych.pluginAPI.setTimeout(() => jsPsych.finishTrial(response), TIMING.familiarityFeedback);
+    jsPsych.pluginAPI.setTimeout(() => jsPsych.finishTrial(response), TIMING.recognitionFeedback);
   }, { once: true });
 }
 
@@ -189,10 +185,10 @@ timeline.push({
   on_finish: data => jsPsych.data.addProperties({ fullscreen_entered: data.success }),
 });
 
-// Precargamos las 48 imágenes de aprendizaje. El reconocimiento solo presenta nombres.
+// Precargamos las 96 imágenes de aprendizaje. El reconocimiento solo presenta nombres.
 timeline.push({
   type: preload,
-  images: celebrities.map(person => person.image),
+  images: plan.exposure.map(person => person.image),
   css_classes: ['instructions-screen'],
   message: '<h1>Preparando las imágenes</h1><p>Espera un momento. La tarea comenzará cuando estén todas listas.</p>',
   show_progress_bar: true,
@@ -203,44 +199,23 @@ timeline.push({
   data: { task: 'preload' },
 });
 
-// 2. Primera fase: familiaridad. La imagen permanece hasta recibir una respuesta.
-timeline.push(instructions(1, '¿Conoces a este famoso?', `
+// 2. Primera fase: observar durante al menos 5 segundos y después avanzar con Espacio.
+timeline.push(instructions(1, 'Observa con atención', `
   <p>Verás una serie de personas famosas, de una en una, con su nombre.</p>
-  <p>Indica cuánto conoces a cada persona seleccionando una opción de esta escala:</p>
-  ${familiarityScale('familiarity-example')}
-  <p>Las opciones 2 y 4 representan grados intermedios. Cada imagen permanecerá hasta que selecciones tu respuesta.</p>`));
+  <p>Observa con atención cada imagen y fíjate bien en todos sus detalles: cómo aparece la persona y qué elementos la acompañan.</p>
+  <p>Durante los primeros <strong>5 segundos</strong> solo podrás observar la imagen. Después aparecerá una indicación en azul marino para que pulses la barra espaciadora y continúes.</p>`));
 plan.exposure.forEach((person, index) => {
   timeline.push(fixation(1), {
     type: htmlKeyboard,
-    css_classes: ['experimental-screen', 'familiarity-screen'],
-    stimulus: `<p class="familiarity-question">¿Conoces a este famoso?</p>${photo(person, true)}${familiarityScale('familiarity-response')}`,
-    choices: 'NO_KEYS',
-    post_trial_gap: TIMING.exposureGap,
-    data: itemData(person, 1, index, 'familiarity'),
-    on_load: () => enableScaleResponse(value => ({
-      response: value - 1, // Mantener el índice 0–4 de los datos anteriores.
-      familiarity: value,
-    })),
-  });
-});
-
-// 3. Segunda fase: observar durante al menos 5 segundos y después avanzar con Espacio.
-timeline.push(instructions(2, 'Observa de nuevo', `
-  <p>Volverás a ver las mismas personas.</p>
-  <p>Observa con atención a cada persona famosa. Fíjate en cómo aparece en la imagen y en los detalles que la acompañan.</p>
-  <p>Durante los primeros <strong>5 segundos</strong> solo podrás observar la imagen. Después aparecerá una indicación en azul marino para que pulses la barra espaciadora y continúes.</p>`));
-plan.reexposure.forEach((person, index) => {
-  timeline.push(fixation(2), {
-    type: htmlKeyboard,
     css_classes: ['experimental-screen'],
-    stimulus: photo(person, true) + '<p class="reexposure-continue" hidden>Pulsa la barra espaciadora para continuar.</p>',
+    stimulus: photo(person, true) + '<p class="exposure-continue" hidden>Pulsa la barra espaciadora para continuar.</p>',
     choices: 'NO_KEYS',
     post_trial_gap: TIMING.exposureGap,
-    data: { ...itemData(person, 2, index, 'reexposure'), minimum_exposure_ms: TIMING.exposure },
+    data: { ...itemData(person, 1, index, 'exposure'), minimum_exposure_ms: TIMING.exposure },
     on_load: () => {
       const imageStartedAt = performance.now();
       jsPsych.pluginAPI.setTimeout(() => {
-        root.querySelector('.reexposure-continue').hidden = false;
+        root.querySelector('.exposure-continue').hidden = false;
         // Activar el teclado ahora: las pulsaciones anteriores no cuentan.
         jsPsych.pluginAPI.getKeyboardResponse({
           valid_responses: [' '],
@@ -258,20 +233,20 @@ plan.reexposure.forEach((person, index) => {
   });
 });
 
-// 4. Tercera fase: únicamente una frase, sin fotografía ni información sobre aciertos.
-timeline.push(instructions(3, 'Recuerda los objetos', `
+// 3. Segunda fase: únicamente una frase, sin fotografía ni información sobre aciertos.
+timeline.push(instructions(2, 'Recuerda los objetos', `
   <p>Leerás frases sobre los objetos que tenían las personas en las imágenes.</p>
   <p>Indica si cada frase coincide con lo que has visto. Responde con el teclado:</p>
   <div class="key-examples"><span><kbd>A</kbd> NO</span><span><kbd>L</kbd> SÍ</span></div>
   <p>La frase permanecerá hasta que respondas. Intenta responder con precisión y sin demorarte innecesariamente.</p>`));
 plan.verification.forEach((person, index) => {
-  timeline.push(fixation(3), {
+  timeline.push(fixation(2), {
     type: htmlKeyboard,
     css_classes: ['experimental-screen'],
     stimulus: `<p class="sentence-stimulus">${person.sentence}</p>${responseLabels('NO', 'SÍ')}`,
     choices: ['a', 'l'],
     data: {
-      ...itemData(person, 3, index, 'verification'),
+      ...itemData(person, 2, index, 'verification'),
       sentence: person.sentence,
       sentence_index: person.index,
       sentence_is_true: person.isTrue,
@@ -283,7 +258,7 @@ plan.verification.forEach((person, index) => {
   });
 });
 
-// 5. Tarea distractora. El reloj nunca se reinicia al empezar otra partida.
+// 4. Tarea distractora. El reloj nunca se reinicia al empezar otra partida.
 timeline.push(instructions('distractor', 'Juega al Tetris', `
   <p>Encaja las piezas para completar líneas horizontales. El juego comenzará automáticamente y durará <strong>${TIMING.tetris / 60000} minutos</strong>.</p>
   <p><kbd>←</kbd> <kbd>→</kbd> Mover · <kbd>↑</kbd> Girar · <kbd>↓</kbd> Bajar<br><kbd>Espacio</kbd> Caída rápida</p>
@@ -300,8 +275,8 @@ timeline.push({
   on_finish: data => Object.assign(data, game.stop()),
 });
 
-// 6. Cuarta fase: nombres de 48 personas vistas y 48 nuevas, mezclados.
-timeline.push(instructions(4, '¿Lo has visto en este estudio?', `
+// 5. Tercera fase: nombres de 48 personas vistas y 48 nuevas, mezclados.
+timeline.push(instructions(3, '¿Lo has visto en este estudio?', `
   <p>Ahora verás los nombres de una serie de personas famosas. Algunas ya han aparecido en este estudio y otras son nuevas.</p>
   <p>Indica tu grado de seguridad sobre si cada persona apareció en las imágenes de este estudio. Selecciona una opción del 1 al 6 según estos significados:</p>
   ${recognitionScale('recognition-example')}
@@ -317,21 +292,21 @@ timeline.push(instructions(4, '¿Lo has visto en este estudio?', `
   <p>Cada nombre permanecerá hasta que selecciones tu respuesta.</p>`));
 plan.recognition.forEach((person, index) => {
   const verification = verificationById.get(person.id);
-  timeline.push(fixation(4), {
+  timeline.push(fixation(3), {
     type: htmlKeyboard,
     css_classes: ['experimental-screen', 'recognition-screen'],
     stimulus: `<p class="recognition-question">¿Lo has visto en este estudio?</p><div class="recognition-stimulus"><p class="recognition-name">${person.name}</p></div>${recognitionScale('recognition-response')}`,
     choices: 'NO_KEYS',
     data: {
-      ...itemData(person, 4, index, 'recognition'),
+      ...itemData(person, 3, index, 'recognition'),
       stimulus_type: 'name',
       stimulus_text: person.name,
       image_is_old: person.isOld,
       image_type: person.isOld ? 'Visto' : 'Nuevo',
       correct_response_meaning: person.isOld ? 'Visto' : 'Nuevo',
-      // Enlace con la condición previa; la respuesta de fase 3 está en su propia fila.
-      phase3_sentence_is_true: verification?.isTrue ?? null,
-      phase3_sentence: verification?.sentence ?? null,
+      // Enlace con la condición previa; la respuesta de fase 2 está en su propia fila.
+      phase2_sentence_is_true: verification?.isTrue ?? null,
+      phase2_sentence: verification?.sentence ?? null,
     },
     on_load: () => enableScaleResponse(value => ({ response: value, recognition_rating: value })),
     on_finish: data => Object.assign(data, scoreRecognitionResponse(person, data.recognition_rating)),

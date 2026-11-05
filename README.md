@@ -1,6 +1,6 @@
 # Experimento 6 · Famosos
 
-Experimento de aprendizaje y memoria con jsPsych 8. Las fotografías se cargan directamente desde [saramff/famosos_img](https://github.com/saramff/famosos_img), fijadas a una revisión para mantener constantes los estímulos. No hay que descargarlas.
+Experimento de aprendizaje y memoria con jsPsych 8. Las fotografías se cargan directamente desde [saramff/famosos_img](https://github.com/saramff/famosos_img), fijadas a revisiones para mantener constantes los estímulos. No hay que descargarlas.
 
 ## Iniciar
 
@@ -29,19 +29,18 @@ Cuando termine el despliegue, compartir la URL HTTPS que entrega Netlify. Cada p
 | Paso | Presentación | Avance |
 | --- | --- | --- |
 | Consentimiento y datos | Formularios con logotipos oficiales | Botón; campos obligatorios validados |
-| Fase 1 | 48 famosos con nombre y objeto; escala de familiaridad 1–5 | Clic en la escala, sin límite de tiempo |
-| Fase 2 | Las mismas 48 imágenes y nombres, en otro orden | Espacio, habilitado después de 5 segundos de observación |
-| Fase 3 | Solo 48 frases: 24 verdaderas y 24 falsas | A = NO, L = SÍ |
+| Fase 1 | 96 imágenes de famosos con su nombre: 48 originales y 48 adicionales, mezcladas y presentadas una sola vez para observar todos sus detalles | Espacio, habilitado después de 5 segundos de observación |
+| Fase 2 | Solo 48 frases: 24 verdaderas y 24 falsas | A = NO, L = SÍ |
 | Intermedio | Tetris con líneas completas de la partida actual, sin reloj visible | Termina automáticamente a los 15 minutos |
-| Fase 4 | Solo nombres: 48 personas vistas y 48 nuevas, mezcladas | Clic en una escala de seguridad 1–6, desde seguro de haberlo visto hasta seguro de que es nuevo |
+| Fase 3 | Solo nombres: 48 personas vistas y 48 nuevas, mezcladas | Clic en una escala de seguridad 1–6, desde seguro de haberlo visto hasta seguro de que es nuevo |
 
-Hay instrucciones antes de cada fase, una cruz central de 500 ms antes de los estímulos de las fases 1–3 y de 2 segundos antes de cada nombre de reconocimiento. Se mantiene una pausa blanca de 1 segundo después de las imágenes de las fases 1 y 2. En la fase 1 se espera la respuesta de familiaridad: 1 = «Para nada», 3 = «Me suena», 5 = «Claro que sí», sin tiempo mínimo ni máximo. No se muestra feedback de acierto o error.
+Hay instrucciones antes de cada fase, una cruz central de 500 ms antes de los estímulos de las fases 1 y 2 y de 2 segundos antes de cada nombre de reconocimiento. Se mantiene una pausa blanca de 1 segundo después de cada imagen de la fase 1. No se muestra feedback de acierto o error.
 
-En la fase 2 se pide observar con atención a cada persona famosa, fijándose en cómo aparece en la imagen y en los detalles que la acompañan, sin mencionar explícitamente los objetos. Durante 5 segundos se ignoran las teclas y no aparece ninguna indicación de avance. Después aparece en azul marino «Pulsa la barra espaciadora para continuar.» La imagen permanece hasta una nueva pulsación de Espacio; mantenerlo pulsado desde antes no permite avanzar. Los nombres de ambas presentaciones usan una tipografía más grande. Las etiquetas NO/SÍ de verificación se sitúan al 25 % y al 75 % del ancho de la ventana, separadas también del borde inferior. Las instrucciones muestran las teclas sin añadir «izquierda» ni «derecha».
+En la fase 1 se pide observar con atención cada imagen y fijarse bien en todos sus detalles: cómo aparece la persona y qué elementos la acompañan, sin mencionar explícitamente los objetos. Durante 5 segundos se ignoran las teclas y no aparece ninguna indicación de avance. Después aparece en azul marino «Pulsa la barra espaciadora para continuar.» La imagen permanece hasta una nueva pulsación de Espacio; mantenerlo pulsado desde antes no permite avanzar. Los nombres usan una tipografía más grande. Las etiquetas NO/SÍ de verificación se sitúan al 25 % y al 75 % del ancho de la ventana, separadas también del borde inferior. Las instrucciones muestran las teclas sin añadir «izquierda» ni «derecha».
 
-El participante no ve números ni nombres de fases, ni indicaciones para salir de pantalla completa. Las primeras instrucciones solo piden valorar la familiaridad. Tanto el ejemplo como las imágenes utilizan la misma escala de botones de radio del 1 al 5 unidos por una línea, con los anclajes «Para nada», «Me suena» y «Claro que sí».
+El participante no ve números ni nombres de fases, ni indicaciones para salir de pantalla completa. Las primeras instrucciones solo piden observar las imágenes; no se solicita ninguna valoración ni se presenta una escala durante el aprendizaje.
 
-En reconocimiento aparece únicamente el nombre de cada persona, centrado y sin fotografía, con la pregunta «¿Lo has visto en este estudio?» y una escala del 1 al 6 del mismo estilo que la de familiaridad. El participante responde únicamente con su grado de seguridad. Los extremos se etiquetan «Seguro de haberlo visto» y «Seguro de que es nuevo»; se explica el significado de los seis números en las instrucciones:
+En reconocimiento aparece únicamente el nombre de cada persona, centrado y sin fotografía, con la pregunta «¿Lo has visto en este estudio?» y una escala del 1 al 6 de botones de radio unidos por una línea. El participante responde únicamente con su grado de seguridad. Los extremos se etiquetan «Seguro de haberlo visto» y «Seguro de que es nuevo»; se explica el significado de los seis números en las instrucciones:
 
 1. Estoy totalmente seguro/a de haberlo visto.
 2. Estoy bastante seguro/a de haberlo visto.
@@ -50,14 +49,16 @@ En reconocimiento aparece únicamente el nombre de cada persona, centrado y sin 
 5. Estoy bastante seguro/a de que es nuevo.
 6. Estoy totalmente seguro/a de que es nuevo.
 
-No hay selección inicial ni límite de tiempo. El ejemplo de las instrucciones y los ensayos comparten la misma escala. En ambas tareas, al responder, la opción elegida muestra una bolita azul oscuro durante 300 ms antes de avanzar. La primera selección queda bloqueada. El tiempo de respuesta se mide hasta la elección, sin sumar esa espera; su duración se configura en `TIMING.familiarityFeedback`.
+No hay selección inicial ni límite de tiempo. El ejemplo de las instrucciones y los ensayos comparten la misma escala. Al responder en reconocimiento, la opción elegida muestra una bolita azul oscuro durante 300 ms antes de avanzar. La primera selección queda bloqueada. El tiempo de respuesta se mide hasta la elección, sin sumar esa espera; su duración se configura en `TIMING.recognitionFeedback`.
 
-Las imágenes de las dos fases de aprendizaje usan el mismo marco cuadrado, centrado en la ventana (hasta 500 × 500 px, reducido en pantallas pequeñas). Se mantiene la proporción original sin recortar objetos ni deformar las fotografías. Solo se precargan esas 48 imágenes: los famosos nuevos se presentan por su nombre en reconocimiento. Las pantallas experimentales y las pausas son blancas.
+Las imágenes de aprendizaje usan un marco cuadrado, centrado en la ventana (hasta 500 × 500 px, reducido en pantallas pequeñas). Se mantiene la proporción original sin recortar objetos ni deformar las fotografías. Se precargan las 96 imágenes de estudio: los famosos nuevos del reconocimiento se presentan únicamente por su nombre. Las pantallas experimentales y las pausas son blancas.
+
+Las 48 imágenes adicionales proceden de la carpeta [48 para fase de estudio](https://github.com/saramff/famosos_img/tree/master/48%20para%20fase%20de%20estudio). Solo aparecen en observación; no se generan frases ni preguntas de reconocimiento sobre ellas. La verificación conserva los 48 famosos originales y el reconocimiento mantiene sus 48 originales vistos y sus 48 nombres nuevos. Las fotografías originales conservan `IMAGE_REVISION`; las añadidas usan `STUDY_IMAGE_REVISION`, porque la revisión reciente del repositorio renombra algunos archivos originales.
 
 ## Cambiar el experimento sin perderse
 
-- `src/objects.js`: catálogo editable. Cada fila contiene el nombre de archivo, el objeto real y el objeto falso. Debajo están los 48 famosos nuevos. Los arrays `trueSentences` y `falseSentences` se generan a partir del catálogo y comparten índices.
-- `src/design.js`: sorteos y evaluación de las teclas de verificación y de la escala de reconocimiento. Se sortean 24 famosos para frases verdaderas; los 24 restantes reciben su frase falsa. Nunca se seleccionan ambas frases del mismo famoso ni se repite un objeto falso.
+- `src/objects.js`: catálogo editable. `celebrities` contiene los 48 famosos originales con sus objetos. `studyOnlyNames` enumera los 48 nombres de archivo adicionales; `studyOnlyCelebrities` les asigna identificadores S01–S48 y `studyCelebrities` reúne las 96 imágenes para observación. `newCelebrities` contiene los 48 nombres nuevos exclusivos de reconocimiento. Los arrays `trueSentences` y `falseSentences` se generan únicamente a partir del catálogo original y comparten índices.
+- `src/design.js`: sorteos y evaluación de las teclas de verificación y de la escala de reconocimiento. La observación mezcla `studyCelebrities`; la verificación y los vistos de reconocimiento usan solo `celebrities`. Se sortean 24 famosos para frases verdaderas; los 24 restantes reciben su frase falsa. Nunca se seleccionan ambas frases del mismo famoso ni se repite un objeto falso.
 - `src/config.js`: tiempos en milisegundos y versión del experimento.
 - `src/main.js`: secuencia de pantallas, instrucciones y campos registrados, con comentarios en español.
 - `consentA2.html` y `src/datos.html`: formularios HTML insertados por jsPsych. Hay una sola copia del consentimiento.
@@ -88,26 +89,31 @@ Al finalizar se envía un objeto JSON con `participant_id`, `session_id`, `parti
 | `sex`, `age` | Sexo y edad en años |
 | `phase`, `task`, `order_in_phase` | Fase, tipo de ensayo y posición dentro de la fase |
 | `stimulus_id`, `person_name`, `image_file`, `image_url` | Identidad estable y fotografía correspondiente |
+| `study_only` | `true` únicamente para las 48 imágenes adicionales de observación (S01–S48); no tienen objeto asociado en los datos |
+| `image_revision`, `study_image_revision` | Revisión de la imagen del ensayo y revisión de las 48 añadidas; a nivel de sesión, `image_revision` conserva la revisión de los originales |
 | `stimulus_type`, `stimulus_text` | En reconocimiento: `name` y nombre realmente presentado; la fotografía se conserva solo como metadato |
-| `familiarity` | Valor 1–5 de la primera fase |
 | `recognition_rating`, `response_is_seen` | Valor 1–6 de reconocimiento y clasificación Visto (`true` para 1–3) o Nuevo (`false` para 4–6) |
-| `sentence`, `sentence_index`, `sentence_is_true`, `sentence_type` | Frase realmente presentada, índice y condición verdadera/falsa de fase 3 |
+| `sentence`, `sentence_index`, `sentence_is_true`, `sentence_type` | Frase realmente presentada, índice y condición verdadera/falsa de fase 2 |
 | `actual_object`, `stated_object` | Objeto real y objeto mencionado en la frase |
 | `response`, `response_meaning` | En verificación: tecla y SÍ/NO. En reconocimiento: valor 1–6 y Visto/Nuevo |
 | `correct_response`, `correct_response_meaning` | En verificación: tecla y respuesta esperadas. En reconocimiento: valores aceptados (`[1,2,3]` o `[4,5,6]`) y Visto/Nuevo |
 | `correct`, `accuracy` | Booleano de acierto y etiqueta Correcta/Incorrecta, calculados por separado en cada fase |
-| `image_is_old`, `image_type` | Condición de la persona en fase 4: vista (`true`, Visto) o nueva (`false`, Nuevo); nombres de campos conservados por compatibilidad |
-| `phase3_sentence_is_true`, `phase3_sentence` | Condición previa del famoso visto; vacíos para los nuevos |
-| `rt` | Tiempo de respuesta en milisegundos; en reexposición se mide desde que aparece la indicación de Espacio |
-| `minimum_exposure_ms`, `rt_from_image_ms` | Tiempo mínimo de observación en reexposición y tiempo total hasta pulsar Espacio desde que aparece la imagen |
-| `feedback_duration_ms` | Tiempo que permanece visible la selección de familiaridad o reconocimiento antes de avanzar; no se suma a `rt` |
+| `image_is_old`, `image_type` | Condición de la persona en fase 3: vista (`true`, Visto) o nueva (`false`, Nuevo); nombres de campos conservados por compatibilidad |
+| `phase2_sentence_is_true`, `phase2_sentence` | Condición previa del famoso visto; vacíos para los nuevos |
+| `rt` | Tiempo de respuesta en milisegundos; en observación se mide desde que aparece la indicación de Espacio |
+| `minimum_exposure_ms`, `rt_from_image_ms` | Tiempo mínimo de observación y tiempo total hasta pulsar Espacio desde que aparece la imagen |
+| `feedback_duration_ms` | Tiempo que permanece visible la selección de reconocimiento antes de avanzar; no se suma a `rt` |
 | `planned_duration_ms`, `observed_duration_ms` | Duración prevista cuando existe y duración observada del ensayo |
 | `trial_index`, `time_elapsed`, `recorded_at` | Índice global, tiempo acumulado y fecha ISO |
 | `lines`, `game_lines`, `best_game_lines` | Total de líneas del intermedio (solo en datos), líneas de la última partida y mejor partida |
 | `games_started`, `game_overs` | Partidas iniciadas y perdidas en Tetris |
 | `key_actions`, `active_ms`, `duration_ms` | Acciones del juego, tiempo con una partida en curso y duración del intermedio |
 
-Para analizar, filtrar `task = verification` (fase 3) o `task = recognition` (fase 4). Unir ambas tablas por **`session_id` + `stimulus_id`**. La corrección en reconocimiento no depende de la respuesta anterior. La familiaridad se une con esas mismas claves. `response` de familiaridad conserva el índice 0–4 por compatibilidad; usar `familiarity` (1–5) para analizar la escala. Desde `experiment_version = famosos-6-v4`, reconocimiento presenta nombres, registra `response` y `recognition_rating` directamente del 1 al 6 y calcula el acierto según la mitad de la escala elegida. Las fases siguen registradas en los datos, aunque no se muestran al participante.
+Para analizar, filtrar `task = verification` (fase 2) o `task = recognition` (fase 3). Unir ambas tablas por **`session_id` + `stimulus_id`**. La corrección en reconocimiento no depende de la respuesta anterior. Desde `experiment_version = famosos-6-v4`, reconocimiento presenta nombres, registra `response` y `recognition_rating` directamente del 1 al 6 y calcula el acierto según la mitad de la escala elegida. Las fases siguen registradas en los datos, aunque no se muestran al participante.
+
+Desde `experiment_version = famosos-6-v6` se elimina la tarea de familiaridad y se presenta cada imagen una sola vez para observarla (`task = exposure`, fase 1). La verificación pasa de fase 3 a fase 2 y el reconocimiento de fase 4 a fase 3. `orders.phase1`, `orders.phase2` y `orders.phase3` corresponden a esas tres tareas. Los campos de enlace en reconocimiento pasan de `phase3_sentence_is_true` y `phase3_sentence` a `phase2_sentence_is_true` y `phase2_sentence`. Tener en cuenta la versión al combinar sesiones anteriores y nuevas.
+
+Desde `experiment_version = famosos-6-v7`, la observación y `orders.phase1` incluyen 96 imágenes (48 originales y 48 adicionales). `orders.phase2` mantiene las 48 frases originales y `orders.phase3` mantiene los 96 nombres de reconocimiento. Las 48 personas adicionales de observación no aparecen en ninguna de esas dos tareas.
 
 Las respuestas se mantienen únicamente en memoria mientras la página está abierta. No se guardan copias locales ni se ofrecen descargas. Cada recarga comienza directamente desde el consentimiento, con una sesión y un sorteo nuevos, sin pantalla de recuperación ni aviso de confirmación. Al iniciar se elimina cualquier copia local dejada por la versión anterior, sin tocar otros datos del navegador.
 

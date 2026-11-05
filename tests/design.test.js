@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { celebrities, newCelebrities, trueSentences, falseSentences } from '../src/objects.js';
+import { celebrities, studyOnlyCelebrities, studyCelebrities, newCelebrities, trueSentences, falseSentences } from '../src/objects.js';
 import { createPlan, scoreVerificationResponse, scoreRecognitionResponse } from '../src/design.js';
 import { TIMING } from '../src/config.js';
 
@@ -17,11 +17,15 @@ function seededShuffle(seed) {
   };
 }
 
-test('96 imágenes distintas y 48 pares de frases sin repetir objetos', () => {
+test('144 imágenes distintas, 96 para estudio y 48 pares de frases originales', () => {
   assert.equal(celebrities.length, 48);
+  assert.equal(studyOnlyCelebrities.length, 48);
+  assert.equal(studyCelebrities.length, 96);
   assert.equal(newCelebrities.length, 48);
-  assert.equal(new Set([...celebrities, ...newCelebrities].map(person => person.image)).size, 96);
-  assert.equal(new Set([...celebrities, ...newCelebrities].map(person => person.name)).size, 96);
+  const allPeople = [...studyCelebrities, ...newCelebrities];
+  assert.equal(new Set(allPeople.map(person => person.id)).size, 144);
+  assert.equal(new Set(allPeople.map(person => person.image)).size, 144);
+  assert.equal(new Set(allPeople.map(person => person.name)).size, 144);
   assert.equal(trueSentences.length, 48);
   assert.equal(falseSentences.length, 48);
   assert.equal(new Set(celebrities.flatMap(person => [person.object, person.falseObject])).size, 96);
@@ -32,37 +36,41 @@ test('96 imágenes distintas y 48 pares de frases sin repetir objetos', () => {
   });
 });
 
-test('1000 participantes: 24 V + 24 F excluyentes y 48 vistos + 48 nuevos', () => {
+test('1000 participantes: 96 en estudio, 24 V + 24 F originales y reconocimiento sin los 48 añadidos', () => {
   const originalOrder = celebrities.map(person => person.id);
+  const studyOrder = studyCelebrities.map(person => person.id);
+  const studyOnlyIds = new Set(studyOnlyCelebrities.map(person => person.id));
   const idsEverTrue = new Set();
   const idsEverFalse = new Set();
   for (let seed = 1; seed <= 1000; seed++) {
     const plan = createPlan(seededShuffle(seed));
-    assert.equal(plan.exposure.length, 48);
-    assert.deepEqual(new Set(plan.exposure.map(p => p.id)), new Set(originalOrder));
-    assert.deepEqual(new Set(plan.reexposure.map(p => p.id)), new Set(originalOrder));
-    assert.notDeepEqual(plan.exposure.map(p => p.id), plan.reexposure.map(p => p.id));
+    assert.equal(plan.exposure.length, 96);
+    assert.deepEqual(new Set(plan.exposure.map(p => p.id)), new Set(studyOrder));
+    assert.equal(new Set(plan.exposure.map(p => p.id)).size, 96);
     assert.equal(plan.verification.length, 48);
     assert.equal(new Set(plan.verification.map(p => p.id)).size, 48);
+    assert.deepEqual(new Set(plan.verification.map(p => p.id)), new Set(originalOrder));
+    assert.ok(plan.verification.every(p => !studyOnlyIds.has(p.id)));
     assert.equal(plan.verification.filter(p => p.isTrue).length, 24);
     assert.equal(plan.verification.filter(p => !p.isTrue).length, 24);
     assert.equal(new Set(plan.verification.map(p => p.statedObject)).size, 48);
-    plan.verification.forEach(p => (p.isTrue ? idsEverTrue : idsEverFalse).add(p.id));
+    plan.verification.forEach(p => {
+      (p.isTrue ? idsEverTrue : idsEverFalse).add(p.id);
+      assert.equal(p.sentence, p.isTrue ? trueSentences[p.index] : falseSentences[p.index]);
+      assert.equal(p.statedObject, p.isTrue ? p.object : p.falseObject);
+    });
     assert.equal(plan.recognition.length, 96);
     assert.equal(plan.recognition.filter(p => p.isOld).length, 48);
     assert.equal(plan.recognition.filter(p => !p.isOld).length, 48);
     assert.equal(new Set(plan.recognition.map(p => p.id)).size, 96);
-    assert.deepEqual(new Set(plan.recognition.filter(p => p.isOld).map(p => p.name)), new Set(plan.exposure.map(p => p.name)));
+    assert.ok(plan.recognition.every(p => !studyOnlyIds.has(p.id)));
+    assert.deepEqual(new Set(plan.recognition.filter(p => p.isOld).map(p => p.name)), new Set(celebrities.map(p => p.name)));
     assert.deepEqual(new Set(plan.recognition.filter(p => !p.isOld).map(p => p.name)), new Set(newCelebrities.map(p => p.name)));
   }
   assert.equal(idsEverTrue.size, 48);
   assert.equal(idsEverFalse.size, 48);
   assert.deepEqual(celebrities.map(p => p.id), originalOrder);
-});
-
-test('si el sorteo repite el orden completo, la segunda fase tiene otro orden', () => {
-  const plan = createPlan(items => [...items]);
-  assert.notDeepEqual(plan.exposure.map(p => p.id), plan.reexposure.map(p => p.id));
+  assert.deepEqual(studyCelebrities.map(p => p.id), studyOrder);
 });
 
 test('la verificación respeta A = NO y L = SÍ', () => {
@@ -105,5 +113,6 @@ test('tiempos del protocolo', () => {
   assert.equal(TIMING.recognitionFixation, 2000);
   assert.equal(TIMING.exposure, 5000);
   assert.equal(TIMING.exposureGap, 1000);
+  assert.equal(TIMING.recognitionFeedback, 300);
   assert.equal(TIMING.tetris, 900000);
 });

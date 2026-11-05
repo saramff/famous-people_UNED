@@ -2,9 +2,10 @@
 // Los objetos reales se han comprobado visualmente en las 48 imágenes.
 // Los 48 objetos falsos son distintos y ninguno es un objeto real del catálogo.
 export const IMAGE_REVISION = '8352a09db137e9734a5e7f91238595dc6573e7fc';
-const IMAGE_ROOT = `https://raw.githubusercontent.com/saramff/famosos_img/${IMAGE_REVISION}`;
+export const STUDY_IMAGE_REVISION = '3ea76a4d8df5a37cea32f146a79cdfe9fd3d3bd7';
 
-export const imageUrl = (folder, name) => `${IMAGE_ROOT}/${folder}/${encodeURIComponent(name)}.png`;
+export const imageUrl = (folder, name, revision = IMAGE_REVISION) =>
+  `https://raw.githubusercontent.com/saramff/famosos_img/${revision}/${encodeURIComponent(folder)}/${encodeURIComponent(name)}.png`;
 
 const catalog = [
   ['Aitana', 'un globo', 'un lápiz'],
@@ -66,6 +67,33 @@ export const celebrities = catalog.map(([file, object, falseObject], index) => (
   object,
   falseObject,
 }));
+
+// Estas 48 personas solo se muestran en observación: no generan frases ni reconocimiento.
+const studyOnlyNames = [
+  'Adele', 'Alaska', 'Ana Obregón', 'Andreu Buenafuente',
+  'Arturo Valls', 'Belén Rueda', 'Bill Clinton', 'Britney Spears',
+  'Bruce Willis', 'Cameron Diaz', 'Eddie Murphy', 'Edurne',
+  'Elijah Wood', 'Emilia Clarke', 'Emmanuel Macron', 'Enrique Iglesias',
+  'Eva González', 'Eva Hache', 'Fernando Torres', 'Iker Jiménez',
+  'Inés Arrimadas', 'Javier Bardem', 'Jennifer Lopez', 'Jesús Calleja',
+  'Joaquín Sánchez', 'Julia Roberts', 'Julio Iglesias', 'Lady Gaga',
+  'Madonna', 'Matt Damon', 'Melendi', 'Mercedes Milá',
+  'Meryl Streep', 'Miguel Bosé', 'Mónica Naranjo', 'Nicole Kidman',
+  'Pablo Casado', 'Pedro Piqueras', 'Raphael', 'Ricky Martin',
+  'Robert De Niro', 'Ryan Gosling', 'Ryan Reynolds', 'Santi Millán',
+  'Sara Carbonero', 'Susanna Griso', 'Sylvester Stallone', 'Vicente del Bosque',
+];
+
+export const studyOnlyCelebrities = studyOnlyNames.map((name, index) => ({
+  id: `S${String(index + 1).padStart(2, '0')}`,
+  name,
+  file: `${name}.png`,
+  image: imageUrl('48 para fase de estudio', name, STUDY_IMAGE_REVISION),
+  imageRevision: STUDY_IMAGE_REVISION,
+  studyOnly: true,
+}));
+
+export const studyCelebrities = [...celebrities, ...studyOnlyCelebrities];
 
 // El mismo índice siempre corresponde al mismo famoso: elegir V excluye su F.
 export const trueSentences = celebrities.map(person => `${person.name} tenía ${person.object}.`);
